@@ -56,7 +56,6 @@ public class Numero {
 	public void setArtistas(Set<Artista> artistas) {
 		this.artistas = artistas;
 	}
-	
 
 	public double getDuracion() {
 		return duracion;
@@ -76,8 +75,9 @@ public class Numero {
 
 	@Override
 	public String toString() {
-		return "Numero [id=" + id + ", orden=" + orden + ", nombre=" + nombre + ", duracion=" + duracion + ", artistas="
-				+ artistas + ", espectaculo=" + espectaculo + "]";
+		return "Numero [id=" + id + ", orden=" + orden + ", nombre=" + nombre
+				+ ", duracion=" + duracion + ", artistas=" + artistas
+				+ ", espectaculo=" + espectaculo + "]";
 	}
 
 }

@@ -1,5 +1,9 @@
 package com.lucigf.modelo;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
 public abstract class Persona {
 
 	protected Long id;
@@ -60,4 +64,7 @@ public abstract class Persona {
 				+ ", credenciales=" + credenciales + "]";
 	}
 
+	
+	
+	
 }

@@ -1,93 +1,164 @@
 package com.lucigf.modelo;
 
-public class Sesion extends Credenciales {
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.security.PrivateKey;
+import java.util.Scanner;
 
-	private Persona usuario;
-	private Perfil perfil;
-	private boolean activa;
+public class Sesion {
+
+	private String nombreUsuario;
+	private Perfil perfilActual;
 
 	
-
-	public Sesion(Long id, String nombre, String password, Perfil perfil, Persona usuario, boolean activa) {
-		super(id, nombre, password, perfil);
-		this.usuario = usuario;
-		this.activa = activa;
-	}
-
-
-
-	public Sesion() {
+	
+	public Sesion(String nombreUsuario, Perfil perfilActual) {
 		super();
-		// TODO Auto-generated constructor stub
+		this.nombreUsuario = nombreUsuario;
+		this.perfilActual = perfilActual;
 	}
 
 
 
-	public Sesion(Long id, String nombre, String password, Perfil perfil) {
-		super(id, nombre, password, perfil);
-		// TODO Auto-generated constructor stub
-	}
+
+	public boolean login(String usuario, String contraseña) {
+		
+		if(perfilActual!=null) {
+			System.out.println("Ya hay una sesion activa.");
+			return false;
+		}
+		
+		
+		if("admin".equals(usuario) && "admin".equals(contraseña)) {
+			perfilActual=Perfil.ADMIN;
+			nombreUsuario="Admin";
+			return true;
+		}
+		
+		try(BufferedReader br=new BufferedReader(new FileReader("credenciales.txt"))){
+			
+			String linea;
+			while((linea=br.readLine())!=null) {
+				
+				String[]datos=linea.split("\\|");
+				if(datos.length>=7 && datos.equals(usuario) && datos.equals(contraseña)) {
+					nombreUsuario=datos[1];
+					perfilActual=Perfil.valueOf(datos[6]);
+					return true;
+				}
+					
+					
+				}
+				
+				
+			}catch(IOException e) {
+				e.printStackTrace();
+			}
+			
+			System.out.println("Credenciales incorrectas");
+			return false;
+		}
+		
+		public void logout() {
+			perfilActual=null;
+			nombreUsuario=null;
+		}
+		
+		public Perfil getPerfilActual() {
+			return perfilActual;
+		}
+	
 
 
 
-	public void cerrarSesion() {
-		this.activa = false;
-		System.out.println("Sesión cerrada para " + usuario.getNombre());
-	}
 
+
+
+	
 	// Menu dependiendo del perfil
 
 	public void mostrarMenu() {
-		System.out.println("\n=== MENÚ DE " + perfil + " ===");
-
-		switch (perfil) {
-		case ADMIN:
-			mostrarMenuAdmin();
-			break;
-		case COORDINACION:
-			mostrarMenuCoordinacion();
-			break;
-		case ARTISTA:
-			mostrarMenuArtista();
-			break;
-		default:
-			mostrarMenuInvitado();
+		if(perfilActual==null) {
+			
+			System.out.println("== Menú Invitado ==" );
+			System.out.println("1. Ver espectáculos");
+			System.out.println("0. Salir");
+		}else {
+			switch(perfilActual) {
+			case ADMIN:
+				System.out.println("== Menú Administrador ==");
+				System.out.println("1. Registrar nueva persona");
+				System.out.println("2. Gestionar credenciales");
+				System.out.println("3. Gestionar espectáculos");
+				System.out.println("4. Ver todos los datos del circo");
+				System.out.println("0. Cerrar sesión");
+				break;
+				
+			case COORDINACION:
+				System.out.println("== Menú Coordinación ==");
+				System.out.println("1. Crear o modificar espectáculos");
+				System.out.println("2. Gestionar números");
+				System.out.println("3. Asignar artistas a números");
+				System.out.println("4. Ver información completa de espectáculos");
+				System.out.println("0. Cerrar sesión");
+				break;
+				
+			case ARTISTA:
+				System.out.println("== Menú Artista ==");
+				System.out.println("1. Ver mi ficha personal");
+				System.out.println("2. Ver mis espectáculos y números");
+				System.out.println("0. Cerrar sesión");
+				break;
+			}
 		}
 	}
-
-	private void mostrarMenuAdmin() {
-		System.out.println("1. Registrar nueva persona");
-		System.out.println("2. Gestionar credenciales");
-		System.out.println("3. Gestionar espectáculos");
-		System.out.println("4. Ver todos los datos del circo");
-		System.out.println("0. Cerrar sesión");
+	
+	
+	
+	public void registrarPersona() {
+		Scanner teclado=new Scanner(System.in);
+		if(perfilActual!=Perfil.ADMIN) {
+			System.out.println("Acesso denegado, solo el ADMIN puede registrar personas");
+		}
+		
+		
+		System.out.println("Nombre: ");
+		String nombre=teclado.next();
+		System.out.println("Email: ");
+		String email=teclado.next();
+		System.out.println("Nacionalidad: ");
+		String nacionalidad=teclado.next();
+		System.out.println("Usuario: ");
+		String usuario=teclado.next();
+		System.out.println("Contraseña: ");
+		String contrasenia=teclado.next();
+		System.out.println("Perfil: COORDINACION O ARTISTA");
+		Perfil perfil=Perfil.valueOf(teclado.next().toUpperCase());
+		
+		
+	
+		int idpersona=0;
+		
+		//Escribir en el fichero
+		try(BufferedWriter bw=new BufferedWriter(new FileWriter("credenciales.txt",true))){
+			bw.write((idpersona++)+ "|" + usuario+ "|" + contrasenia+ "|" +email+ "|" +nacionalidad+ "|" +perfil);
+			bw.newLine();
+		}catch(FileNotFoundException e) {
+			System.out.println(e.getMessage());
+			
+		}catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
+		
+		
+		
 	}
+	
 
-	private void mostrarMenuCoordinacion() {
-		System.out.println("1. Crear o modificar espectáculos");
-		System.out.println("2. Gestionar números");
-		System.out.println("3. Asignar artistas a números");
-		System.out.println("4. Ver información completa de espectáculos");
-		System.out.println("0. Cerrar sesión");
-	}
-
-	private void mostrarMenuArtista() {
-		System.out.println("1. Ver mi ficha personal");
-		System.out.println("2. Ver mis espectáculos y números");
-		System.out.println("0. Cerrar sesión");
-	}
-
-	private void mostrarMenuInvitado() {
-	        System.out.println("1. Ver lista básica de espectáculos");
-	        System.out.println("0. Salir");
-	}
-
-	@Override
-	public String toString() {
-		return "Sesion [usuario=" + usuario + ", perfil=" + perfil + ", activa=" + activa + ", getId()=" + getId()
-				+ ", getNombre()=" + getNombre() + ", getPassword()=" + getPassword() + ", getPerfil()=" + getPerfil()
-				+ ", toString()=" + super.toString() + ", getClass()=" + getClass() + ", hashCode()=" + hashCode()
-				+ "]";
-	}
+	
 
 }
