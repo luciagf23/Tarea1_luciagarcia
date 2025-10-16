@@ -50,10 +50,8 @@ public class Main {
 		
 		do {
 			System.out.println("1. Ver espectáculos");
-			System.out.println("2. Login/Logout");
-			System.out.println("3. Gestionar personas y credenciales");
-			System.out.println("4. Gestionar espectáculos");
-			System.out.println("5. Salir");
+			System.out.println("2. Iniciar Sesion");
+			System.out.println("3. Salir");
 			
 			System.out.println("Introduce una opcion");
 			opcion=teclado.nextInt();
@@ -65,15 +63,10 @@ public class Main {
 				break;
 				
 			case 2:
+				
 				break;
 				
 			case 3:
-				break;
-				
-			case 4:
-				break;
-				
-			case 5:
 				break;
 				
 				default: System.out.println("Saliendo...");
