@@ -17,7 +17,6 @@ public class Sesion {
 	
 	
 	public Sesion(String nombreUsuario, Perfil perfilActual) {
-		super();
 		this.nombreUsuario = nombreUsuario;
 		this.perfilActual = perfilActual;
 	}
@@ -25,19 +24,24 @@ public class Sesion {
 
 
 
-	public boolean login(String usuario, String contraseña) {
+	public boolean login(String usuario, String contrasenia) {
 		
-		if(perfilActual!=null) {
+		if(perfilActual != Perfil.INVITADO) {
 			System.out.println("Ya hay una sesion activa.");
 			return false;
 		}
 		
-		
-		if("admin".equals(usuario) && "admin".equals(contraseña)) {
+		 if (usuario.isEmpty() || contrasenia.isEmpty()) {
+	            System.out.println("Usuario o contraseña vacíos");
+	            return false;
+	        }
+		/*
+		if("admin".equals(usuario) && "admin".equals(contrasenia)) {
 			perfilActual=Perfil.ADMIN;
 			nombreUsuario="Admin";
 			return true;
 		}
+		*/
 		
 		try(BufferedReader br=new BufferedReader(new FileReader("credenciales.txt"))){
 			
@@ -45,77 +49,38 @@ public class Sesion {
 			while((linea=br.readLine())!=null) {
 				
 				String[]datos=linea.split("\\|");
-				if(datos.length>=7 && datos.equals(usuario) && datos.equals(contraseña)) {
+				if(datos.length>=7 && datos.equals(usuario) && datos.equals(contrasenia)) {
 					nombreUsuario=datos[1];
 					perfilActual=Perfil.valueOf(datos[6]);
+					System.out.println("Login correcto. Bienvenido, " +datos[4]+ "("+perfilActual+ ")");
 					return true;
 				}
 					
-					
-				}
+			}
 				
 				
 			}catch(IOException e) {
-				e.printStackTrace();
+				System.out.println("Error al leer credencieles.txt " +e.getMessage());
 			}
 			
 			System.out.println("Credenciales incorrectas");
 			return false;
 		}
 		
+	
+	
 		public void logout() {
-			perfilActual=null;
+			if(perfilActual==Perfil.INVITADO) {
+				System.out.println("No hay sesion activa para cerrar");
+				return;
+			}
+			
+			System.out.println("Sesión cerrada " +nombreUsuario);
+			perfilActual=Perfil.INVITADO;
 			nombreUsuario=null;
 		}
 		
-		public Perfil getPerfilActual() {
-			return perfilActual;
-		}
 	
-
-
-
-
-
-
-	
-	// Menu dependiendo del perfil
-
-	public void mostrarMenu() {
-		if(perfilActual==null) {
-			
-			System.out.println("== Menú Invitado ==" );
-			System.out.println("1. Ver espectáculos");
-			System.out.println("0. Salir");
-		}else {
-			switch(perfilActual) {
-			case ADMIN:
-				System.out.println("== Menú Administrador ==");
-				System.out.println("1. Registrar nueva persona");
-				System.out.println("2. Gestionar credenciales");
-				System.out.println("3. Gestionar espectáculos");
-				System.out.println("4. Ver todos los datos del circo");
-				System.out.println("0. Cerrar sesión");
-				break;
-				
-			case COORDINACION:
-				System.out.println("== Menú Coordinación ==");
-				System.out.println("1. Crear o modificar espectáculos");
-				System.out.println("2. Gestionar números");
-				System.out.println("3. Asignar artistas a números");
-				System.out.println("4. Ver información completa de espectáculos");
-				System.out.println("0. Cerrar sesión");
-				break;
-				
-			case ARTISTA:
-				System.out.println("== Menú Artista ==");
-				System.out.println("1. Ver mi ficha personal");
-				System.out.println("2. Ver mis espectáculos y números");
-				System.out.println("0. Cerrar sesión");
-				break;
-			}
-		}
-	}
 	
 	
 	
@@ -123,9 +88,10 @@ public class Sesion {
 		Scanner teclado=new Scanner(System.in);
 		if(perfilActual!=Perfil.ADMIN) {
 			System.out.println("Acesso denegado, solo el ADMIN puede registrar personas");
+			return;
 		}
 		
-		
+		System.out.println("== Registrar nueva persona ==");
 		System.out.println("Nombre: ");
 		String nombre=teclado.next();
 		System.out.println("Email: ");
@@ -147,18 +113,66 @@ public class Sesion {
 		try(BufferedWriter bw=new BufferedWriter(new FileWriter("credenciales.txt",true))){
 			bw.write((idpersona++)+ "|" + usuario+ "|" + contrasenia+ "|" +email+ "|" +nacionalidad+ "|" +perfil);
 			bw.newLine();
+			System.out.println("Persona registrada correctamente");
 		}catch(FileNotFoundException e) {
 			System.out.println(e.getMessage());
 			
 		}catch (IOException e) {
-			System.out.println(e.getMessage());
+			System.out.println("Error escribiendo en credenciales.txt" +e.getMessage());
 		}
 		
 		
 		
 	}
 	
+	// Menu dependiendo del perfil
 
+		public void mostrarMenu() {
+			if(perfilActual==null) {
+				
+				System.out.println("== Menú Invitado ==" );
+				System.out.println("1. Ver espectáculos");
+				System.out.println("0. Salir");
+			}else {
+				switch(perfilActual) {
+				case ADMIN:
+					System.out.println("== Menú Administrador ==");
+					System.out.println("1. Registrar nueva persona");
+					System.out.println("2. Gestionar credenciales");
+					System.out.println("3. Gestionar espectáculos");
+					System.out.println("4. Ver todos los datos del circo");
+					System.out.println("0. Cerrar sesión");
+					break;
+					
+				case COORDINACION:
+					System.out.println("== Menú Coordinación ==");
+					System.out.println("1. Crear o modificar espectáculos");
+					System.out.println("2. Gestionar números");
+					System.out.println("3. Asignar artistas a números");
+					System.out.println("4. Ver información completa de espectáculos");
+					System.out.println("0. Cerrar sesión");
+					break;
+					
+				case ARTISTA:
+					System.out.println("== Menú Artista ==");
+					System.out.println("1. Ver mi ficha personal");
+					System.out.println("2. Ver mis espectáculos y números");
+					System.out.println("0. Cerrar sesión");
+					break;
+				}
+			}
+		}
+	
+
+	
+	 // Getters
+    public Perfil getPerfilActual() {
+        return perfilActual;
+    }
+
+    public String getNombreUsuario() {
+        return nombreUsuario;
+    }
 	
 
 }
