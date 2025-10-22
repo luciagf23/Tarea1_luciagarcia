@@ -77,7 +77,7 @@ public class Main {
 		
 	
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException, IOException {
 		// TODO Auto-generated method stub
 
 		boolean salir=false;
@@ -146,7 +146,7 @@ public class Main {
 	
 	
 	//Admin
-	private static boolean menuAdmin(String opcion) {
+	private static boolean menuAdmin(String opcion) throws FileNotFoundException, IOException {
 		
 		switch(opcion) {
 		case "1":
@@ -198,7 +198,7 @@ public class Main {
 				break;
 			case "2": verEspectaculos();
 			break;
-			case "0":System.out.println("Opción no váida");
+			case "0":System.out.println("Opción no válida");
 				
 			}
 			return false;

@@ -7,7 +7,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.security.PrivateKey;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public class Sesion {
 
@@ -84,7 +88,7 @@ public class Sesion {
 	
 	
 	
-	public void registrarPersona() {
+	public void registrarPersona() throws FileNotFoundException, IOException {
 		Scanner teclado=new Scanner(System.in);
 		if(perfilActual!=Perfil.ADMIN) {
 			System.out.println("Acesso denegado, solo el ADMIN puede registrar personas");
@@ -93,25 +97,122 @@ public class Sesion {
 		
 		System.out.println("== Registrar nueva persona ==");
 		System.out.println("Nombre: ");
-		String nombre=teclado.next();
+		String nombre=teclado.next().trim();
 		System.out.println("Email: ");
-		String email=teclado.next();
+		String email=teclado.next().trim();
 		System.out.println("Nacionalidad: ");
-		String nacionalidad=teclado.next();
+		String nacionalidad=teclado.next().trim();
 		System.out.println("Usuario: ");
-		String usuario=teclado.next();
+		String usuario=teclado.next().trim();
 		System.out.println("Contraseña: ");
-		String contrasenia=teclado.next();
+		String contrasenia=teclado.next().trim();
 		System.out.println("Perfil: COORDINACION O ARTISTA");
-		Perfil perfil=Perfil.valueOf(teclado.next().toUpperCase());
+		String tipoPerfil=teclado.nextLine().trim().toUpperCase();
 		
+		
+		boolean esSenior=false;
+		String fechaSenior="";
+		String apodo="";
+		String especialidades="";
 		
 	
-		int idpersona=0;
+		
+		if(tipoPerfil.equals("COORDINACION")) {
+			System.out.println("¿Es senior? (S/N): ");
+			String respuesta=teclado.nextLine().trim().toUpperCase();
+			if(respuesta.equals("S")){
+					esSenior=true;
+					System.out.println("Fecha desde que es senior (DD/MM/AAAA): ");
+					fechaSenior=teclado.nextLine().trim();
+			}
+			
+		}else {
+			System.out.println("¿Tiene apodo artístico? (S/N): ");
+			String respuesta=teclado.nextLine().trim().toUpperCase();
+			if(respuesta.equals("S")) {
+				System.out.println("Apodo: ");
+				apodo=teclado.nextLine().trim();
+			}
+			
+			
+			System.out.println("Especialidades disponibles: " +Arrays.toString(Especialidad.values()));
+			
+			boolean ok = false;
+		    Set<Especialidad> especialidadesSeleccionadas = EnumSet.noneOf(Especialidad.class);
+
+		    while (!ok) {
+		        System.out.print("Introduce las especialidades separadas por comas: ");
+		        String entrada = teclado.nextLine().trim().toUpperCase();
+
+		        if (entrada.isEmpty()) {
+		            System.out.println("Debes introducir al menos una especialidad");
+		            continue;
+		        }
+		        
+		        String[]partes=entrada.split(",");
+		        ok=true;
+		        
+		        
+		        for(String p:partes) {
+		        	try {
+		        		Especialidad esp=Especialidad.valueOf(p.trim());
+		        	}catch(IllegalArgumentException e) {
+		        		System.out.println("No es una especialidad válida");
+		        		ok=false;
+		        		break;
+		        		
+		        	}
+		        }
+		      }
+		    especialidades = especialidadesSeleccionadas.toString()
+		            .replace("[", "")
+		            .replace("]", "")
+		            .replace(" ", "");
+			
+		}
+		
+		
+		//Credenciales
+		System.out.println("Nombre de usuario: ");
+		usuario=teclado.nextLine().trim().toLowerCase();
+		if(!Pattern.matches("[a-z] {3,}", usuario)) {
+			System.out.println("La contraseña debe tener al menos 3 caracteres y no contener espacios");
+			return;
+		}
+		
+		
+		
+		//duplicados
+		try(BufferedReader br=new BufferedReader(new FileReader("credenciales.txt"))){
+			String linea;
+			while((linea=br.readLine())!=null) {
+				String[]datos=linea.split("\\|");
+				if(datos.length>=7) {
+					if(datos[1].equals(usuario)) {
+						System.out.println("Ya existe usuario con ese nombre");
+						return;
+					}
+					if(datos[3].equalsIgnoreCase(email)) {
+						System.out.println("Ya existe una persona registrada con ese email");
+						return;
+					}
+				}
+			}
+		}catch(FileNotFoundException e){
+			
+		}catch(IOException e) {
+			System.out.println("Error leyendo credenciales.txt: " +e.getMessage());
+		}
+		
+		
+		//Calcular id
+		
+		
+		int idpersona=contarLineasFichero("credenciales.txt")+1;
 		
 		//Escribir en el fichero
 		try(BufferedWriter bw=new BufferedWriter(new FileWriter("credenciales.txt",true))){
-			bw.write((idpersona++)+ "|" + usuario+ "|" + contrasenia+ "|" +email+ "|" +nacionalidad+ "|" +perfil);
+			bw.write((idpersona++)+ "|" + usuario+ "|" + contrasenia+ "|" +email+ "|" +nacionalidad+ "|" +tipoPerfil);
 			bw.newLine();
 			System.out.println("Persona registrada correctamente");
 		}catch(FileNotFoundException e) {
@@ -124,6 +225,20 @@ public class Sesion {
 		
 		
 	}
+	
+	
+	private int contarLineasFichero(String nombreFichero) {
+		int contador=0;
+		try(BufferedReader br=new BufferedReader(new FileReader(nombreFichero))){
+			while(br.readLine()!=null)
+				contador++;
+		}catch(IOException e) {
+			
+		}
+		return contador;
+	}
+	
+	
 	
 	// Menu dependiendo del perfil
 
