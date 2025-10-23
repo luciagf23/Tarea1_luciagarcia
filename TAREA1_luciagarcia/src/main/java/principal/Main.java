@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.channels.NonWritableChannelException;
@@ -33,6 +34,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.lucigf.modelo.Artista;
+import com.lucigf.modelo.Configuracion;
 import com.lucigf.modelo.Coordinacion;
 import com.lucigf.modelo.Credenciales;
 import com.lucigf.modelo.Especialidad;
@@ -52,10 +54,21 @@ public class Main {
 	private static Sesion sesionActual = new Sesion(null, Perfil.INVITADO);
 	private static Scanner teclado = new Scanner(System.in);
 
+	// Rutas ficheros
+	private static final String rutaEspectaculos = "src/main/resources/ficheros/espectaculos.dat";
+	private static final String rutaCredenciales = "src/main/resources/ficheros/credenciales.txt";
+	private static final String rutaPaises = "src/main/resources/ficheros/paises.xml";
+
 	// CU1: Ver espectáculos
 
 	public static void verEspectaculos() {
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("espectaculos.dat"))) {
+
+		File fichero = new File(rutaEspectaculos);
+		if (!fichero.exists()) {
+			System.out.println("Archivo espectaculos.dat no encontrado");
+			return;
+		}
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(rutaEspectaculos))) {
 
 			ArrayList<Espectaculo> espectaculos = (ArrayList<Espectaculo>) ois.readObject();
 			System.out.println("== Espectáculos ==");
@@ -91,7 +104,7 @@ public class Main {
 			return false;
 		}
 
-		try (BufferedReader br = new BufferedReader(new FileReader("credenciales.txt"))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(rutaCredenciales))) {
 
 			String linea;
 			while ((linea = br.readLine()) != null) {
@@ -99,7 +112,8 @@ public class Main {
 				String[] datos = linea.split("\\|");
 				if (datos.length >= 7 && datos[1].equals(usuario) && datos[2].equals(contrasenia)) {
 					nombreUsuario = datos[1];
-					perfilActual = Perfil.valueOf(datos[6]);
+					perfilActual = Perfil.valueOf(datos[6].toUpperCase());
+					sesionActual = new Sesion(Long.parseLong(datos[0]), perfilActual);
 					System.out.println("Login correcto. Bienvenido, " + datos[4] + "(" + perfilActual + ")");
 					return true;
 				}
@@ -130,12 +144,18 @@ public class Main {
 
 	public static void registrarPersona() throws IOException {
 		Scanner teclado = new Scanner(System.in);
-		if (perfilActual != Perfil.ADMIN) {
-			System.out.println("Acceso denegado, solo el ADMIN puede registrar personas");
+		/*
+		 * if (perfilActual != Perfil.ADMIN) {
+		 * System.out.println("Acceso denegado, solo el ADMIN puede registrar personas"
+		 * ); return; }
+		 */
+		System.out.println("== Registrar nueva persona ==");
+
+		InputStream input = Main.class.getClassLoader().getResourceAsStream(Configuracion.get("ficheronacionalidades"));
+		if (input == null) {
+			System.out.println("No se pudo encontrar el archivo de nacionalidades.");
 			return;
 		}
-
-		System.out.println("== Registrar nueva persona ==");
 
 		System.out.print("Nombre: ");
 		String nombre = teclado.nextLine().trim();
@@ -235,7 +255,7 @@ public class Main {
 		}
 
 		// duplicados
-		try (BufferedReader br = new BufferedReader(new FileReader("credenciales.txt"))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(rutaCredenciales))) {
 			String linea;
 			while ((linea = br.readLine()) != null) {
 				String[] datos = linea.split("\\|");
@@ -257,11 +277,11 @@ public class Main {
 		}
 
 		// ID automático
-		int idpersona = contarLineasFichero("credenciales.txt") + 1;
+		int idpersona = contarLineasFichero(rutaCredenciales) + 1;
 
 		// Escribir en el fichero
 
-		try (BufferedWriter bw = new BufferedWriter(new FileWriter("credenciales.txt", true))) {
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaCredenciales, true))) {
 			bw.write(idpersona + "|" + usuario + "|" + contrasenia + "|" + email + "|" + nacionalidad + "|" + tipoPerfil
 					+ "|" + perfilActual);
 			bw.newLine();
@@ -323,7 +343,7 @@ public class Main {
 			System.out.println("El nombre no puede estar vacío");
 			return;
 		}
-		if(nombre.length()>25) {
+		if (nombre.length() > 25) {
 			System.out.println("El nombre no puede superar los 25 caracteres");
 			return;
 		}
@@ -347,7 +367,7 @@ public class Main {
 
 		// Leer espectáculos
 		ArrayList<Espectaculo> lista = new ArrayList<>();
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("espectaculos.dat"))) {
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(rutaEspectaculos))) {
 			lista = (ArrayList<Espectaculo>) ois.readObject();
 		} catch (FileNotFoundException e) {
 			System.out.println("Fichero no encontrado");
@@ -366,10 +386,7 @@ public class Main {
 		}
 
 		// Nuevo ID
-		long nuevoId = 1;
-		if (lista.isEmpty()) {
-			nuevoId = lista.get(lista.size() - 1).getId() + 1;
-		}
+		long nuevoId = lista.isEmpty() ? 1 : lista.get(lista.size() - 1).getId() + 1;
 
 		// Asignar coordinador
 		Coordinacion coordinadorAsignado = null;
@@ -416,7 +433,7 @@ public class Main {
 		lista.add(nuevo);
 
 		// Guardar en el fichero
-		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("espectaculos.dat"))) {
+		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(rutaEspectaculos))) {
 			oos.writeObject(lista);
 			System.out.println("Espectáculo creado correctamente");
 		} catch (IOException e) {
@@ -427,7 +444,7 @@ public class Main {
 
 	private static ArrayList<Coordinacion> obtenerCoordinadores() {
 		ArrayList<Coordinacion> listaCoord = new ArrayList<>();
-		try (BufferedReader br = new BufferedReader(new FileReader("credenciales.txt"))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(rutaCredenciales))) {
 			String linea;
 			while ((linea = br.readLine()) != null) {
 				String[] datos = linea.split("\\|");
@@ -449,10 +466,11 @@ public class Main {
 	// Menu dependiendo del perfil
 
 	public static void mostrarMenu() {
-		if (perfilActual == null) {
+		if (perfilActual == Perfil.INVITADO) {
 
 			System.out.println("== Menú Invitado ==");
 			System.out.println("1. Ver espectáculos");
+			System.out.println("2. Login");
 			System.out.println("0. Salir");
 		} else {
 			switch (perfilActual) {
@@ -485,11 +503,15 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
-		// TODO Auto-generated method stub
 
 		boolean salir = false;
 
 		Scanner teclado = new Scanner(System.in);
+
+		System.out.println("Bienvenidos al sistema de gestión del Circo de Lucía");
+		System.out.println("--------------------------------------------------------");
+		System.out.println("Aquí podrás gestionar espectáculos, artistas y mucho más");
+		System.out.println();
 
 		while (!salir) {
 
@@ -500,20 +522,20 @@ public class Main {
 			switch (sesionActual.getPerfilActual()) {
 
 			case INVITADO:
-				menuInvitado(opcion);
+				salir = menuInvitado(opcion);
 
 				break;
 
 			case ADMIN:
-				menuAdmin(opcion);
+				salir = menuAdmin(opcion);
 				break;
 
 			case COORDINACION:
-				menuCoordinacion(opcion);
+				salir = menuCoordinacion(opcion);
 				break;
 
 			case ARTISTA:
-				menuArtista(opcion);
+				salir = menuArtista(opcion);
 				break;
 
 			default:
@@ -539,6 +561,7 @@ public class Main {
 			iniciarSesion();
 			break;
 		case "0":
+			System.out.println("Gracias por visitar el Circo. ¡Hasta pronto!");
 			return true;
 		default:
 			System.out.println("Opcion no válida");
@@ -565,6 +588,7 @@ public class Main {
 			break;
 		case "0":
 			cerrarSesion();
+			return true;
 		default:
 			System.out.println("Opción no válida");
 
@@ -590,6 +614,7 @@ public class Main {
 			break;
 		case "0":
 			cerrarSesion();
+			break;
 		default:
 			System.out.println("Opción inválida");
 		}

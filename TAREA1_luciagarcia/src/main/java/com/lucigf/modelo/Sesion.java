@@ -13,11 +13,9 @@ public class Sesion {
 	private String password;
 	private Perfil perfilActual;
 
-	public Sesion(String nombreUsuario, Perfil perfilActual) {
+	public Sesion(Long id, Perfil perfilActual) {
 		super();
 		this.id = id;
-		this.nombreUsuario = nombreUsuario;
-		this.password = password;
 		this.perfilActual = perfilActual;
 	}
 

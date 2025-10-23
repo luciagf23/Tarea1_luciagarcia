@@ -1,5 +1,6 @@
 package com.lucigf.modelo;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 import java.util.HashSet;
@@ -10,7 +11,7 @@ import java.util.Set;
  * @version 1.0
  * @since 2025
  */
-public class Coordinacion extends Persona {
+public class Coordinacion extends Persona implements Serializable{
 
 	private Long idCoord;
 	private boolean senior = false;

@@ -3,13 +3,14 @@ package com.lucigf.modelo;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * @author Lucía García Fernández
  * @version 1.0
  * @since 2025
  */
-public abstract class Persona {
+public abstract class Persona implements Serializable{
 
 	protected Long id;
 	protected String nombre;
