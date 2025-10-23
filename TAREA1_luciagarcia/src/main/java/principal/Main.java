@@ -144,13 +144,17 @@ public class Main {
 
 	public static void registrarPersona() throws IOException {
 		Scanner teclado = new Scanner(System.in);
-		/*
-		 * if (perfilActual != Perfil.ADMIN) {
-		 * System.out.println("Acceso denegado, solo el ADMIN puede registrar personas"
-		 * ); return; }
-		 */
+		
+		 if (perfilActual != Perfil.ADMIN) {
+		 System.out.println("Acceso denegado, solo el ADMIN puede registrar personas"); return; }
+		 
 		System.out.println("== Registrar nueva persona ==");
 
+		String ruta = Configuracion.get("ficheronacionalidades");
+	    if (ruta == null || ruta.trim().isEmpty()) {
+	        System.out.println("La propiedad 'ficheronacionalidades' no está definida");
+	        return;
+	    }
 		InputStream input = Main.class.getClassLoader().getResourceAsStream(Configuracion.get("ficheronacionalidades"));
 		if (input == null) {
 			System.out.println("No se pudo encontrar el archivo de nacionalidades.");
@@ -504,6 +508,7 @@ public class Main {
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 
+		Configuracion.cargar();
 		boolean salir = false;
 
 		Scanner teclado = new Scanner(System.in);
