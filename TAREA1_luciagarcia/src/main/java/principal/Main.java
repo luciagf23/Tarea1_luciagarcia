@@ -54,12 +54,17 @@ public class Main {
 	
 		//CU2: Iniciar sesión
 		
-		public static boolean iniciarSesion(String usuario,String contrasenia){
+		public static boolean iniciarSesion(){
 			
 			if(perfilActual !=Perfil.INVITADO) {
 				System.out.println("Ya hay una sesión activa");
 				return false;
 			}
+			
+			System.out.println("Usuario: ");
+			String usuario=teclado.nextLine().trim();
+			System.out.println("Contraseña: ");
+			String contrasenia=teclado.nextLine().trim();
 		
 			if (usuario.isEmpty() || contrasenia.isEmpty()) {
 	            System.out.println("Usuario o contraseña vacíos");
@@ -72,7 +77,7 @@ public class Main {
 				while((linea=br.readLine())!=null) {
 					
 					String[]datos=linea.split("\\|");
-					if(datos.length>=7 && datos.equals(usuario) && datos.equals(contrasenia)) {
+					if(datos.length>=7 && datos[1].equals(usuario) && datos[2].equals(contrasenia)) {
 						nombreUsuario=datos[1];
 						perfilActual=Perfil.valueOf(datos[6]);
 						System.out.println("Login correcto. Bienvenido, " +datos[4]+ "("+perfilActual+ ")");
@@ -102,6 +107,8 @@ public class Main {
 			
 		}
 		
+		//Registrar persona solo admin
+		
 		public static void registrarPersona() throws IOException {
 	        Scanner teclado = new Scanner(System.in);
 	        if (perfilActual != Perfil.ADMIN) {
@@ -110,6 +117,7 @@ public class Main {
 	        }
 
 	        System.out.println("== Registrar nueva persona ==");
+	        
 	        System.out.print("Nombre: ");
 	        String nombre = teclado.nextLine().trim();
 	        System.out.print("Email: ");
@@ -145,10 +153,10 @@ public class Main {
 	            }
 
 	            System.out.println("Especialidades disponibles: " + Arrays.toString(Especialidad.values()));
-	            boolean ok = false;
+	            boolean opcion = false;
 	            Set<Especialidad> especialidadesSeleccionadas = EnumSet.noneOf(Especialidad.class);
 
-	            while (!ok) {
+	            while (!opcion) {
 	                System.out.print("Introduce las especialidades separadas por comas: ");
 	                String entrada = teclado.nextLine().trim().toUpperCase();
 
@@ -158,7 +166,7 @@ public class Main {
 	                }
 
 	                String[] partes = entrada.split(",");
-	                ok = true;
+	                opcion = true;
 
 	                for (String p : partes) {
 	                    try {
@@ -166,7 +174,7 @@ public class Main {
 	                        especialidadesSeleccionadas.add(esp);
 	                    } catch (IllegalArgumentException e) {
 	                        System.out.println("No es una especialidad válida");
-	                        ok = false;
+	                        opcion = false;
 	                        break;
 	                    }
 	                }
@@ -224,7 +232,7 @@ public class Main {
 	    }
 		
 		
-		private int contarLineasFichero(String nombreFichero) {
+		private static int contarLineasFichero(String nombreFichero) {
 			int contador=0;
 			try(BufferedReader br=new BufferedReader(new FileReader(nombreFichero))){
 				while(br.readLine()!=null)

@@ -22,8 +22,9 @@ public class Sesion {
 
 	
 	
+	
 
-	public Sesion(Long id, String nombreUsuario, String password, Perfil perfilActual) {
+	public Sesion(String nombreUsuario, Perfil perfilActual) {
 		super();
 		this.id = id;
 		this.nombreUsuario = nombreUsuario;
