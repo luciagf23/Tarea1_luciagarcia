@@ -29,6 +29,17 @@ public class Espectaculo implements Serializable {
 		this.fechafin = fechafin;
 	}
 
+	
+	
+	public Espectaculo(Long id, String nombre, LocalDate fechaini, LocalDate fechafin, Coordinacion coordinacion) {
+		super();
+		this.id = id;
+		this.nombre = nombre;
+		this.fechaini = fechaini;
+		this.fechafin = fechafin;
+		this.coordinacion = coordinacion;
+	}
+
 	public Long getId() {
 		return id;
 	}

@@ -2,19 +2,35 @@ package principal;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.channels.NonWritableChannelException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import javax.swing.text.Document;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import com.lucigf.modelo.Artista;
 import com.lucigf.modelo.Coordinacion;
@@ -31,7 +47,7 @@ public class Main {
 	private static Sesion sesionActual=new Sesion(null,Perfil.INVITADO);
 	private static Scanner teclado=new Scanner(System.in);
 	
-	//CU1: Ver espectáculos básicos
+	//CU1: Ver espectáculos 
 	
 	public static void verEspectaculos() {
 		try(ObjectInputStream ois=new ObjectInputStream(new FileInputStream("espectaculos.dat"))){
@@ -52,7 +68,7 @@ public class Main {
 			}
 		}
 	
-		//CU2: Iniciar sesión
+		//CU2: Login
 		
 		public static boolean iniciarSesion(){
 			
@@ -85,7 +101,7 @@ public class Main {
 					}
 				}
 			}catch(IOException e) {
-				System.out.println("Error al leer credencieles.txt " +e.getMessage());
+				System.out.println("Error al leer credenciales.txt " +e.getMessage());
 			}
 			
 			System.out.println("Credenciales incorrectas");
@@ -94,7 +110,7 @@ public class Main {
 			
 		}
 		
-		//Cerrar sesión 
+		//CU2: Logout
 		
 		public static void cerrarSesion() {
 			if(perfilActual== Perfil.INVITADO) {
@@ -107,7 +123,7 @@ public class Main {
 			
 		}
 		
-		//Registrar persona solo admin
+		//CU3: Registrar persona
 		
 		public static void registrarPersona() throws IOException {
 	        Scanner teclado = new Scanner(System.in);
@@ -122,8 +138,32 @@ public class Main {
 	        String nombre = teclado.nextLine().trim();
 	        System.out.print("Email: ");
 	        String email = teclado.nextLine().trim();
-	        System.out.print("Nacionalidad: ");
-	        String nacionalidad = teclado.nextLine().trim();
+	        
+	        Map<Integer,String>paises=cargarPaises();
+	        if(paises.isEmpty()) {
+	        	System.out.println("No se pudieron cargar los paises");
+	        	return;
+	        }
+	        System.out.println("Lista de paises disponibles: ");
+	        paises.forEach((id,nombrePais)->System.out.println(id+ " - " + nombrePais));
+	        
+	        int idSeleccionado;
+	        while(true) {
+	        	System.out.print("Introduce el id del país: ");
+	        	try {
+	        		idSeleccionado=Integer.parseInt(teclado.nextLine().trim());
+	        		if(paises.containsKey(idSeleccionado))break;
+	        		System.out.print("ID no válido, intentalo de nuevo");
+	   		
+	        	}catch(NumberFormatException e) {
+	        		System.out.print("Por favor, introduzca un número válido");
+	        	}
+	        	
+	        }
+	        
+	        String nacionalidad = paises.get(idSeleccionado);
+	        System.out.print("Nacionalidad seleccionada: " +nacionalidad);
+	        
 	        System.out.print("Usuario: ");
 	        String usuario = teclado.nextLine().trim();
 	        System.out.print("Contraseña: ");
@@ -189,7 +229,7 @@ public class Main {
 	      //Credenciales
 			System.out.println("Nombre de usuario: ");
 			usuario=teclado.nextLine().trim().toLowerCase();
-			if(!Pattern.matches("[a-z] {3,}", usuario)) {
+			if(!Pattern.matches("[a-z]{3,}", usuario)) {
 				System.out.println("La contraseña debe tener al menos 3 caracteres y no contener espacios");
 				return;
 			}
@@ -217,7 +257,7 @@ public class Main {
 			}
 			
 	        
-	        
+	        //ID automático
 	        int idpersona = contarLineasFichero("credenciales.txt") + 1;
 		
 	        //Escribir en el fichero
@@ -242,10 +282,177 @@ public class Main {
 			}
 			return contador;
 		}
+		
+		
+		//Fichero xml
+		private static Map<Integer, String>cargarPaises(){
+			Map<Integer, String>paises=new LinkedHashMap<>();
+			File xmlFile=new File("paises.xml");
+			try {
+				DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
+				DocumentBuilder builder =factory.newDocumentBuilder();
+				Document docu=(Document) builder.parse(xmlFile);
+				NodeList lista=((org.w3c.dom.Document) docu).getElementsByTagName("pais");
+			
+				for(int i=0;i<lista.getLength();i++) {
+					Element e=(Element) lista.item(i);
+					int id =Integer.parseInt(e.getAttribute("id"));
+					String nombre=e.getAttribute("nombre");
+					paises.put(id, nombre);
+				}
+				
+			}catch(Exception e) {
+				System.out.println("Error leyendo paises.xml: " +e.getMessage());
+			}
+			return paises;
+		}
+		
+		
+		//CU5: Crear espectáculo
+		public static void crearEspectaculo() throws FileNotFoundException, IOException {
+			if(perfilActual!= Perfil.ADMIN && perfilActual!=Perfil.COORDINACION) {
+				System.out.println("No tienes permisos para crear espectáculos");
+				return;
+			}
+			
+			DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+			
+			System.out.println("== Crear nuevo espectáculo ==");
+			
+			System.out.println("Nombre del espectáculo: ");
+			String nombre=teclado.nextLine();
+			
+			if(nombre.isEmpty()) {
+				System.out.println("El nombre no puede estar vacío");
+				return;
+			}
+			LocalDate fechaIni, fechaFin;
+			
+			try {
+			System.out.println("Fecha inicio (DD/MM/AAAA): ");
+			fechaIni=LocalDate.parse(teclado.nextLine().trim(),formato);
+			System.out.println("Fecha fin (DD/MM/AAAA): ");
+			fechaFin=LocalDate.parse(teclado.nextLine().trim(),formato);
+			
+			if(fechaFin.isBefore(fechaIni)) {
+				System.out.println("La fecha fin no puede ser anterior a la de inicio");
+				return;
+			}
+			
+			}catch(DateTimeParseException e) {
+				System.out.println("Formato de fecha inválido. Debe ser DD/MM/AAAA"); 
+				return;
+			}
+			
+			//Leer espectáculos
+			ArrayList<Espectaculo>lista=new ArrayList<>();
+			try(ObjectInputStream ois=new ObjectInputStream(new FileInputStream("espectaculos.dat"))){
+				lista=(ArrayList<Espectaculo>) ois.readObject();
+			}catch(FileNotFoundException e) {
+				System.out.println("Fichero no encontrado");
+			
+			}catch(IOException | ClassNotFoundException e) {
+				System.out.println("Error leyendo espectaculos: " +e.getMessage());
+			return;
+		}
+			//Validar nombre
+			for(Espectaculo e:lista) {
+				if(e.getNombre().equalsIgnoreCase(nombre)) {
+					System.out.println("Ya existe un espectáculo con ese nombre");
+					return;
+				}
+				
+			}
+			
+			//Nuevo ID
+			long nuevoId=1;
+			if(lista.isEmpty()) {
+				nuevoId=lista.get(lista.size()-1).getId()+1;
+			}
+			
+			//Asignar coordinador
+			Coordinacion coordinadorAsignado=null;
+			ArrayList<Coordinacion>coordinadores=obtenerCoordinadores();
+			
+			if(perfilActual==Perfil.ADMIN) {
+				if(coordinadores.isEmpty()) {
+					System.out.println("No hay coordinadores disponibles para asignar");
+					return;
+				}
+				System.out.println("Seleccione un coordinador de la lista:");
+		        for (int i = 0; i < coordinadores.size(); i++) {
+		            System.out.println((i + 1) + " . " + coordinadores.get(i).getNombre());
+		        }
+		        
+		        int opcion=0;
+		        while(true) {
+		        	System.out.println("Opcion: ");
+		      
+		        try {
+		        	opcion=Integer.parseInt(teclado.nextLine().trim());
+		        	if(opcion>=1 && opcion<=coordinadores.size()) {
+		        	coordinadorAsignado=coordinadores.get(opcion-1);	
+		        	break;
+		        	
+		        	}else {
+		        		System.out.println("Opcion fuera de rango. Intentalo de nuevo");
+		 
+		        	}
+		        }catch(NumberFormatException e) {
+		        	System.out.println("Selección inválida. Intentalo de nuevo");
+		        	
+		        }
+			}
+		     
+			}else if(perfilActual==Perfil.COORDINACION) {
+				
+				coordinadorAsignado=new Coordinacion();
+				coordinadorAsignado.setNombre(nombreUsuario);
+				coordinadorAsignado.setIdCoord(sesionActual.getId());
+			}
+			
+			Espectaculo nuevo=new Espectaculo(nuevoId, nombre, fechaIni, fechaFin,coordinadorAsignado);
+			lista.add(nuevo);
+			
+			//Guardar en el fichero
+			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("espectaculos.dat"))) {
+		        oos.writeObject(lista);s
+		        System.out.println("Espectáculo creado correctamente");
+		    } catch (IOException e) {
+		        System.out.println("Error guardando el espectáculo: " + e.getMessage());
+		    }
+			
+			}
+			
+			private static ArrayList<Coordinacion>obtenerCoordinadores(){
+				ArrayList<Coordinacion>listaCoord=new ArrayList<>();
+				try(BufferedReader br= new BufferedReader(new FileReader("credenciales.txt"))){
+				String linea;
+				while((linea=br.readLine())!=null){
+					String[]datos=linea.split("\\|");
+					if(datos.length>=7 && datos[6].equalsIgnoreCase("COORDINACION")) {
+						Coordinacion c=new Coordinacion();
+						c.setNombre(datos[4]);
+						c.setIdCoord(Long.parseLong(datos[0]));//id
+						listaCoord.add(c);
+					}
+				}
+				
+			}catch(Exception e) {
+				System.out.println("Error leyendo coordinadores: " +e.getMessage());
+				
+			}
+				return listaCoord;
+			}
+			
+			
+			
+			
+			
 	
 		// Menu dependiendo del perfil
 
-				public void mostrarMenu() {
+				public static void mostrarMenu() {
 					if(perfilActual==null) {
 						
 						System.out.println("== Menú Invitado ==" );
@@ -293,12 +500,11 @@ public class Main {
 		
 		while(!salir) {
 		 
-			sesionActual.mostrarMenu();
+			mostrarMenu();
 			System.out.print("Selecciona una opcion: ");
 			String opcion=teclado.nextLine();
 			
 	
-			
 			switch(sesionActual.getPerfilActual()) {
 			
 			case INVITADO:
@@ -342,6 +548,7 @@ public class Main {
 		break;
 		case "2":
 			iniciarSesion();
+			break;
 		case "0":
 			return true;
 			default:System.out.println("Opcion no válida");
@@ -356,18 +563,19 @@ public class Main {
 		
 		switch(opcion) {
 		case "1":
-			sesionActual.registrarPersona();
+			registrarPersona();
 			break;
 		case "2":
 			System.out.println("Gestión de credenciales");
 			break;
 		case "3":
-			System.out.println("Gestion de espectáculos");
+			crearEspectaculo();
 			break;
 		case "4":
 			verEspectaculos();
 			break;
-		case "0":cerrarSesion();
+		case "0":
+			cerrarSesion();
 			default:System.out.println("Opción no válida");
 			
 		
@@ -376,13 +584,12 @@ public class Main {
 		
 	}
 		
-		//Coordinacion
 		
-		private static boolean menuCoordinacion(String opcion) {
+		private static boolean menuCoordinacion(String opcion) throws FileNotFoundException, IOException {
 			switch(opcion) {
 				case "1":System.out.println("Crear/modificar espectáculos");
+				crearEspectaculo();
 				break;
-				
 				case "2":System.out.println("Gestionar números");
 				break;
 				case "3":System.out.println("Asignar artistas a números");
@@ -404,7 +611,10 @@ public class Main {
 				break;
 			case "2": verEspectaculos();
 			break;
-			case "0":System.out.println("Opción no válida");
+			case "0":
+				cerrarSesion();
+				break;
+				default: System.out.println("Opción no válida");
 				
 			}
 			return false;

@@ -100,18 +100,7 @@ public class Sesion {
 
 
 
-	public void mostrarMenu() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-
-
-	public void registrarPersona() {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 
 
