@@ -416,7 +416,7 @@ public class Main {
 			
 			//Guardar en el fichero
 			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("espectaculos.dat"))) {
-		        oos.writeObject(lista);s
+		        oos.writeObject(lista);
 		        System.out.println("Espectáculo creado correctamente");
 		    } catch (IOException e) {
 		        System.out.println("Error guardando el espectáculo: " + e.getMessage());

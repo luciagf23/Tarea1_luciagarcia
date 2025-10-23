@@ -21,6 +21,7 @@ public class Coordinacion extends Persona {
 		this.senior = senior;
 		this.fechaSenior = fechaSenior;
 	}
+	
 
 	public Long getIdCoord() {
 		return idCoord;
