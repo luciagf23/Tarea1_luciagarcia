@@ -4,6 +4,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+/**
+ * @author Lucía García Fernández
+ * @version 1.0
+ * @since 2025
+ */
 public abstract class Persona {
 
 	protected Long id;
@@ -14,7 +19,6 @@ public abstract class Persona {
 
 	public Persona() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public Persona(Long id, String nombre, String email, String nacionalidad, Credenciales credenciales) {
@@ -50,12 +54,12 @@ public abstract class Persona {
 		this.email = email;
 	}
 
-	public String getNacionalidadg() {
+	public String getNacionalidad() {
 		return nacionalidad;
 	}
 
-	public void setNacionalidadg(String nacionalidadg) {
-		this.nacionalidad = nacionalidadg;
+	public void setNacionalidad(String nacionalidad) {
+		this.nacionalidad = nacionalidad;
 	}
 
 	@Override
@@ -64,7 +68,4 @@ public abstract class Persona {
 				+ ", credenciales=" + credenciales + "]";
 	}
 
-	
-	
-	
 }

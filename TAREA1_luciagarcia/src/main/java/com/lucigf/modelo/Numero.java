@@ -3,6 +3,11 @@ package com.lucigf.modelo;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author Lucía García Fernández
+ * @version 1.0
+ * @since 2025
+ */
 public class Numero {
 
 	private Long id;
@@ -75,9 +80,8 @@ public class Numero {
 
 	@Override
 	public String toString() {
-		return "Numero [id=" + id + ", orden=" + orden + ", nombre=" + nombre
-				+ ", duracion=" + duracion + ", artistas=" + artistas
-				+ ", espectaculo=" + espectaculo + "]";
+		return "Numero [id=" + id + ", orden=" + orden + ", nombre=" + nombre + ", duracion=" + duracion + ", artistas="
+				+ artistas + ", espectaculo=" + espectaculo + "]";
 	}
 
 }

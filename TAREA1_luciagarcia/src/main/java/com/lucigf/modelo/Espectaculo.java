@@ -5,16 +5,19 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author Lucía García Fernández
+ * @version 1.0
+ * @since 2025
+ */
 public class Espectaculo implements Serializable {
 
 	private Long id;
 	private String nombre;
-	private LocalDate fechaini;
-	private LocalDate fechafin;
+	private LocalDate fechaIni;
+	private LocalDate fechaFin;
 	private Coordinacion coordinacion;
 	private Set<Numero> numeros = new HashSet<>();
-
-	private Coordinacion coordinador;
 
 	public Espectaculo() {
 		super();
@@ -25,18 +28,16 @@ public class Espectaculo implements Serializable {
 		super();
 		this.id = id;
 		this.nombre = nombre;
-		this.fechaini = fechaini;
-		this.fechafin = fechafin;
+		this.fechaIni = fechaini;
+		this.fechaFin = fechafin;
 	}
 
-	
-	
 	public Espectaculo(Long id, String nombre, LocalDate fechaini, LocalDate fechafin, Coordinacion coordinacion) {
 		super();
 		this.id = id;
 		this.nombre = nombre;
-		this.fechaini = fechaini;
-		this.fechafin = fechafin;
+		this.fechaIni = fechaini;
+		this.fechaFin = fechafin;
 		this.coordinacion = coordinacion;
 	}
 
@@ -57,29 +58,20 @@ public class Espectaculo implements Serializable {
 	}
 
 	public LocalDate getFechaini() {
-		return fechaini;
+		return fechaIni;
 	}
 
 	public void setFechaini(LocalDate fechaini) {
-		this.fechaini = fechaini;
+		this.fechaIni = fechaini;
 	}
 
 	public LocalDate getFechafin() {
-		return fechafin;
+		return fechaFin;
 	}
 
 	public void setFechafin(LocalDate fechafin) {
-		this.fechafin = fechafin;
+		this.fechaFin = fechafin;
 	}
-
-	public Coordinacion getCoordinador() {
-		return coordinador;
-	}
-
-	public void setCoordinador(Coordinacion coordinador) {
-		this.coordinador = coordinador;
-	}
-	
 
 	public Coordinacion getCoordinacion() {
 		return coordinacion;
@@ -99,8 +91,8 @@ public class Espectaculo implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Espectaculo [id=" + id + ", nombre=" + nombre + ", fechaini=" + fechaini + ", fechafin=" + fechafin
-				+ ", coordinacion=" + coordinacion + ", numeros=" + numeros + ", coordinador=" + coordinador + "]";
+		return "Espectaculo [id=" + id + ", nombre=" + nombre + ", fechaini=" + fechaIni + ", fechafin=" + fechaFin
+				+ ", coordinacion=" + coordinacion + ", numeros=" + numeros.size() + "]";
 	}
 
 }

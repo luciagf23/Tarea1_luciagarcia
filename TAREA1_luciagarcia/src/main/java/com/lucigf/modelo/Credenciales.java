@@ -1,16 +1,21 @@
 package com.lucigf.modelo;
 
+/**
+ * @author Lucía García Fernández
+ * @version 1.0
+ * @since 2025
+ */
 public class Credenciales {
 
 	private Long id;
-	private String nombre;
+	private String nombreUsuario;
 	private String password;
 	private Perfil perfil;
 
 	public Credenciales(Long id, String nombre, String password, Perfil perfil) {
 		super();
 		this.id = id;
-		this.nombre = nombre;
+		this.nombreUsuario = nombre;
 		this.password = password;
 		this.perfil = perfil;
 	}
@@ -29,11 +34,11 @@ public class Credenciales {
 	}
 
 	public String getNombre() {
-		return nombre;
+		return nombreUsuario;
 	}
 
 	public void setNombre(String nombre) {
-		this.nombre = nombre;
+		this.nombreUsuario = nombre;
 	}
 
 	public String getPassword() {
@@ -54,7 +59,8 @@ public class Credenciales {
 
 	@Override
 	public String toString() {
-		return "Credenciales [id=" + id + ", nombre=" + nombre + ", password=" + password + ", perfil=" + perfil + "]";
+		return "Credenciales [id=" + id + ", nombre=" + nombreUsuario + ", password=" + password + ", perfil=" + perfil
+				+ "]";
 	}
 
 }

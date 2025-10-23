@@ -1,9 +1,15 @@
 package com.lucigf.modelo;
 
 import java.time.LocalDate;
+
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author Lucía García Fernández 
+ * @version 1.0
+ * @since 2025
+ */
 public class Coordinacion extends Persona {
 
 	private Long idCoord;
@@ -21,7 +27,6 @@ public class Coordinacion extends Persona {
 		this.senior = senior;
 		this.fechaSenior = fechaSenior;
 	}
-	
 
 	public Long getIdCoord() {
 		return idCoord;
@@ -47,7 +52,6 @@ public class Coordinacion extends Persona {
 		this.fechaSenior = fechaSenior;
 	}
 
-	
 	public Set<Espectaculo> getEspectaculos() {
 		return espectaculos;
 	}
